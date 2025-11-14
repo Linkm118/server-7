@@ -39,7 +39,12 @@ app.get('/api/pokemons/:id', async (c) => {
 
 /*** リソースの取得（コレクション） ***/
 app.get('/api/pokemons', async (c) => {
-  return c.json({ path: c.req.path });
+  const pkmns = await kv.list({ prefix: ['pokemons'] });
+  const pkmnList = await Array.fromAsync(pkmns);
+
+  if (pkmnList.length > 0) {
+    return c.json(pkmnList.map((item) => item.value));
+  }
 });
 
 /*** リソースの更新 ***/
