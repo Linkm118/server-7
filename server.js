@@ -16,12 +16,25 @@ app.post('/api/pokemons', async (c) => {
   record.id = id;
   record.createdAt = new Date().toISOString();
 
+  await kv.set(['pokemons', id], record);
+
+  c.status(201);
+  c.header('Location', `/api/pokemons/${id}`);
+
   return c.json({ record });
 });
 
 /*** リソースの取得（レコード単体） ***/
 app.get('/api/pokemons/:id', async (c) => {
-  return c.json({ path: c.req.path });
+  const id = Number(c.req.param('id'));
+
+  const pkmn = await kv.get(['pokemons', id]);
+  if (pkmn.value) {
+    return c.json(pkmn.value);
+  } else {
+    c.status(404);
+    return c.json({ message: `IDが${id}のポケモンは存在しません。` });
+  }
 });
 
 /*** リソースの取得（コレクション） ***/
